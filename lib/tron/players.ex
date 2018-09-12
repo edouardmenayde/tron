@@ -35,8 +35,8 @@ defmodule Tron.Players do
     reply(players)
   end
 
-  defcast delete(playerId), state: table do
-    :ets.delete(table, playerId)
+  defcast delete(player_id), state: table do
+    :ets.delete(table, player_id)
 
     new_state(table)
   end
