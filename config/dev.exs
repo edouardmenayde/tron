@@ -48,11 +48,3 @@ config :logger, :console, format: "[$level] $message\n"
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
 
-# Configure your database
-config :tron, Tron.Repo,
-  adapter: Ecto.Adapters.MySQL,
-  username: "root",
-  password: "",
-  database: "tron_dev",
-  hostname: "localhost",
-  pool_size: 10

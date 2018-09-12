@@ -8,12 +8,3 @@ config :tron, TronWeb.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
-
-# Configure your database
-config :tron, Tron.Repo,
-  adapter: Ecto.Adapters.MySQL,
-  username: "root",
-  password: "",
-  database: "tron_test",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
