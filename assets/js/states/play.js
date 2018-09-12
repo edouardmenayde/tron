@@ -2,7 +2,7 @@ import client from "../client";
 import { Presence } from "phoenix";
 
 export class Play extends Phaser.State {
-  getRandomColor() {
+  static generateRandomColor() {
     const letters = "0123456789ABCDEF";
     let color = "0x";
 
@@ -13,8 +13,8 @@ export class Play extends Phaser.State {
     return color;
   }
 
-  rand(max) {
-    return Math.floor(Math.random() * max);
+  static rand(min, max) {
+    return Math.floor(Math.random() * max) + min;
   }
 
   drawBike({ color, position }, group) {
@@ -28,40 +28,33 @@ export class Play extends Phaser.State {
 
   onJoin(id, current, newPlayer) {
     if (current) {
-      console.info(`Player ${id} has already joined...`);
-
       return;
     }
 
-    console.info(`A new player ${id} has joined !`);
-    this.drawBike(newPlayer.metas[0], this.playersGroup);
+    this.playersGraphics.set(id, this.drawBike(newPlayer.metas[0], this.playersGroup));
   }
 
   onLeave(id, current, leftPlayer) {
     if (current.metas.length > 0) {
-      console.info(`Player ${id} has left a device.`);
       return;
     }
 
-    console.info(`Player ${id} has left.`);
-    const playerId = player.id;
-
-    const { graphic } = this.players.filter(p => {
-      return p.id == playerId;
-    });
-
-    this.playersGroup.remove(graphic);
+    if (!this.playersGroup.remove(this.playersGraphics.get(id))) {
+        this.playersGraphics.delete(id);
+        throw new Error("Out of sync with the server...");
+    }
   }
 
   create() {
     this.playersGroup = this.add.group();
-    this.players = [];
+    this.players = {};
+    this.playersGraphics = new Map();
 
     const position = {
-      x: this.rand(this.game.width),
-      y: this.rand(this.game.height)
+      x: Play.rand(100, this.game.width - 100),
+      y: Play.rand(100, this.game.height - 100)
     };
-    const color = this.getRandomColor();
+    const color = Play.generateRandomColor();
     const newPlayer = {
       position: position,
       color: color
@@ -80,7 +73,6 @@ export class Play extends Phaser.State {
     });
 
     channel.on("presence_diff", diff => {
-      console.log(diff);
       this.players = Presence.syncDiff(
         this.players,
         diff,
@@ -92,7 +84,6 @@ export class Play extends Phaser.State {
     channel
       .join()
       .receive("ok", players => {
-        console.info("Joined channel.");
       })
       .receive("error", resp => {
         console.error("Unable to join", resp);
